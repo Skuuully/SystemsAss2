@@ -24,6 +24,11 @@ char* sbrk(int);
 int sleep(int);
 int uptime(void);
 int getch(void);
+int greeting(void);
+int setvideomode(int);
+int setpixel(int, int, int);
+int drawline(int, int, int, int, int);
+int add(int, int);
 // TODO: Declare your user APIs for your system calls.
 
 // ulib.c

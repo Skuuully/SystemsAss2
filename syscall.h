@@ -21,3 +21,7 @@
 #define SYS_mkdir  20
 #define SYS_close  21
 #define SYS_getch  22
+#define SYS_greeting  23
+#define SYS_setvideomode  24
+#define SYS_setpixel  25
+#define SYS_drawline  26
