@@ -13,6 +13,16 @@ int sys_greeting(void) {
     return 0;
 }
 
+int sys_begin(void) {
+    consoleSnapshot();
+    return 0;
+}
+
+int sys_end(void) {
+    consoleRevertToSnapshot();
+    return 0;
+}
+
 int sys_setvideomode(void) {
     int mode;
     argint(0, &mode);
@@ -46,6 +56,7 @@ int sys_drawline(void) {
     argint(3, &y1);
     int colour;
     argint(4, &colour);
+    cprintf("line drawn! x0 = %d, x1 = %d\n", x0, x1);
 
     int dx = x1 - x0;
     if (dx < 0) {

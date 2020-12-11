@@ -18,6 +18,7 @@
 #define VGA_0x03_MEMORY P2V(0xb8000)
 #define VGA_0x03_WIDTH 80
 #define VGA_0x03_HEIGHT 25
+#define VGA_0x03_SIZE VGA_0x03_HEIGHT * VGA_0x03_WIDTH * 2
 
 #define VGA_0x13_MEMORY P2V(0xA0000)
 #define VGA_0x13_WIDTH 320
@@ -28,6 +29,15 @@ static void consputc(int);
 static int panicked = 0;
 
 uint currentvgamode = 0x03;
+
+struct snapshot {
+    ushort text[VGA_0x03_SIZE];
+    int cursor;
+
+    bool update;
+} snap;
+// ushort console_snap[VGA_0x03_SIZE];
+// int cursorPos = 0;
 
 /**
  * Global console state shared between all processes and CPUs.
@@ -146,15 +156,21 @@ void panic(char *s) {
 #define BACKSPACE 0x100
 #define CRTPORT 0x3d4
 
+// Outputs to the console
+// Depending on whether the snapshot is being updated it will either output to console or update the snapshot
 static void cgaputc(int c) {
     int pos;
     ushort* crt = VGA_0x03_MEMORY;
 
-    // Cursor position: col + 80*row.
-    outb(CRTPORT, 14);
-    pos = inb(CRTPORT + 1) << 8;
-    outb(CRTPORT, 15);
-    pos |= inb(CRTPORT + 1);
+    if (snap.update) {
+        pos = snap.cursor;
+    } else {
+        // Cursor position: col + 80*row.
+        outb(CRTPORT, 14);
+        pos = inb(CRTPORT + 1) << 8;
+        outb(CRTPORT, 15);
+        pos |= inb(CRTPORT + 1);
+    }
 
     if (c == '\n') {
         pos += 80 - pos % 80;
@@ -165,7 +181,11 @@ static void cgaputc(int c) {
         }
     }
     else {
-        crt[pos++] = (c & 0xff) | 0x0700;  // black on white
+        if (snap.update) {
+            snap.text[pos++] = (c & 0xff) | 0x0700;
+        } else {
+            crt[pos++] = (c & 0xff) | 0x0700;  // black on white
+        }
 
     }
     if (pos < 0 || pos > 25 * 80) {
@@ -173,16 +193,27 @@ static void cgaputc(int c) {
     }
 
     if ((pos / 80) >= 24) { // Scroll up.
-        memmove(crt, crt + 80, sizeof(crt[0]) * 23 * 80);
-        pos -= 80;
-        memset(crt + pos, 0, sizeof(crt[0]) * (24 * 80 - pos));
+        if (snap.update) {
+            memmove(snap.text, snap.text + 80, sizeof(snap.text[0]) * 23 * 80);
+            pos -= 80;
+            memset(snap.text + pos, 0, sizeof(snap.text[0]) * (24 * 80 - pos));
+        } else {
+            memmove(crt, crt + 80, sizeof(crt[0]) * 23 * 80);
+            pos -= 80;
+            memset(crt + pos, 0, sizeof(crt[0]) * (24 * 80 - pos));
+        }
     }
 
-    outb(CRTPORT, 14);
-    outb(CRTPORT + 1, pos >> 8);
-    outb(CRTPORT, 15);
-    outb(CRTPORT + 1, pos);
-    crt[pos] = ' ' | 0x0700;
+
+    if (snap.update) {
+        snap.cursor = pos;
+    } else {
+        outb(CRTPORT, 14);
+        outb(CRTPORT + 1, pos >> 8);
+        outb(CRTPORT, 15);
+        outb(CRTPORT + 1, pos);
+        crt[pos] = ' ' | 0x0700;
+    }
 }
 
 void consputc(int c) {
@@ -330,6 +361,7 @@ void consoleinit(void) {
     devsw[CONSOLE].write = consolewrite;
     devsw[CONSOLE].read = consoleread;
     cons.locking = 1;
+    snap.update = false;
 
     ioapicenable(IRQ_KBD, 0);
 }
@@ -875,4 +907,31 @@ uchar* consolevgabuffer() {
     }
 
     return base;
+}
+
+void consoleSnapshot() {
+    memmove(snap.text, VGA_0x03_MEMORY, VGA_0x03_SIZE);
+    updateCursorPosition();
+    snap.update = true;
+}
+
+void updateCursorPosition() {
+    outb(CRTPORT, 14);
+    snap.cursor = inb(CRTPORT + 1) << 8;
+    outb(CRTPORT, 15);
+    snap.cursor |= inb(CRTPORT + 1);
+}
+
+void consoleRevertToSnapshot() {
+    memmove(VGA_0x03_MEMORY, snap.text, VGA_0x03_SIZE);
+
+    // Move cursor to the end
+    outb(CRTPORT, 14);
+    outb(CRTPORT + 1, snap.cursor >> 8);
+    outb(CRTPORT, 15);
+    outb(CRTPORT + 1, snap.cursor);
+    ushort* crt = VGA_0x03_MEMORY;
+    crt[snap.cursor] = ' ' | 0x0700;
+
+    snap.update = false;
 }

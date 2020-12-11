@@ -25,6 +25,9 @@ int             consolevgamode(int);
 uchar*          consolevgabuffer(void);
 void            consolevgaplane(uchar);
 void            panic(char*) __attribute__((noreturn));
+void            consoleSnapshot(void);
+void            consoleRevertToSnapshot(void);
+void            updateCursorPosition(void);
 
 // exec.c
 int             exec(char*, char**);

@@ -28,6 +28,8 @@ int greeting(void);
 int setvideomode(int);
 int setpixel(int, int, int);
 int drawline(int, int, int, int, int);
+int begin(void);
+int end(void);
 int add(int, int);
 // TODO: Declare your user APIs for your system calls.
 
