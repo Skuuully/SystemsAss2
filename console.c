@@ -24,6 +24,9 @@
 #define VGA_0x13_WIDTH 320
 #define VGA_0x13_HEIGHT 200
 
+#define VGA_0x12_HEIGHT 480
+#define VGA_0x12_WIDTH 640
+
 static void consputc(int);
 
 static int panicked = 0;
@@ -716,7 +719,11 @@ uchar font_8x16[4096] =
 /**
  * Set video plane.
  *
- * On entry, plane must be set to a value between 0 and 3.
+ * On entry, plane must be set to a value between 0 inclusive and 3 inclusive.
+ * 0 = blue
+ * 1 = green
+ * 2 = red
+ * 3 = grey
  */
 void consolevgaplane(uchar plane) {
     uchar planeMask;
@@ -935,3 +942,92 @@ void consoleRevertToSnapshot() {
 
     snap.update = false;
 }
+
+void consoleClearScreen() {
+    switch (currentvgamode) {
+    case 0x03:
+        return;
+        break;
+    case 0x12:
+        for (int plane = 0; plane < 4; plane++) {
+            consolevgaplane(plane);
+            uchar* planeMem = consolevgabuffer();
+            uchar black[VGA_0x12_WIDTH * VGA_0x12_HEIGHT] = {0};
+            memmove(planeMem, black, VGA_0x12_WIDTH * VGA_0x12_HEIGHT);
+        }
+        break;
+    case 0x13: ;
+        uchar black[VGA_0x13_WIDTH * VGA_0x13_HEIGHT] = {0};
+        memmove(VGA_0x13_MEMORY, black, VGA_0x13_WIDTH * VGA_0x13_HEIGHT);
+        break;
+    }
+}
+
+// Array of colours for vga mode 12h
+uchar colours[] = {
+    1, -1, -1, -1, // green = 0
+    2, -1, -1, -1, // red = 1
+    0, -1, -1, -1, // blue = 2
+    0, 2, -1, -1, // magenta = 3
+    0, 1, -1, -1, // cyan = 4
+    1, 2, -1, -1, // yellow = 5
+    0, 1, 2, -1, // white = 6
+    3, -1, -1, -1, // grey = 7
+    0, 1, 2, 3, // black = 8
+};
+
+int bitValues[] = {
+    0b10000000, 0b01000000, 0b00100000, 0b00010000, 0b00001000, 0b00000100, 0b00000010, 0b00000001,
+};
+
+// Colour value given will change the output given depending on the vgamode
+// the area that can be drawn to will also differ
+// 
+void consoleSetPixel(int x, int y, int colour) {
+    int offset = 0;
+    switch (currentvgamode) {
+        case 0x13: ;
+            if (y >= VGA_0x13_HEIGHT || x >= VGA_0x13_WIDTH || x < 0 || y < 0) {
+                return;
+            }
+
+            uchar *pixelStart = consolevgabuffer();
+            offset = (320 * y) + x;
+            pixelStart[offset] = (uchar)colour;
+            break;
+
+        case 0x03:
+            // Test mode, do nothing
+            break;
+
+        case 0x12: ;
+            if (y >= VGA_0x12_HEIGHT || x >= VGA_0x12_WIDTH || x < 0 || y < 0) {
+                return;
+            }
+
+            int position = x + (y * 640); 
+            int value = position % 8;
+            offset = position / 8;
+            colour *= 4;
+
+            for (int i = 0; i < 4; i++) {
+                int planeNum = colours[colour + i];
+                if (planeNum == -1) {
+                    continue;
+                }
+
+                consolevgaplane(planeNum);
+                uchar* planeStart = consolevgabuffer();
+
+                if (colour >= 32 && colour < 36) {
+                    // black, so xor
+                    planeStart[offset] ^= bitValues[value];
+                } else {
+                    // colour so or
+                    planeStart[offset] |= bitValues[value];
+                }
+            }
+            break;
+    }
+}
+

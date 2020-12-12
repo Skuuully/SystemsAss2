@@ -28,6 +28,8 @@ void            panic(char*) __attribute__((noreturn));
 void            consoleSnapshot(void);
 void            consoleRevertToSnapshot(void);
 void            updateCursorPosition(void);
+void            consoleSetPixel(int, int, int);
+void            consoleClearScreen();
 
 // exec.c
 int             exec(char*, char**);

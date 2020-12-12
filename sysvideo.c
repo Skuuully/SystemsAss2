@@ -28,6 +28,7 @@ int sys_setvideomode(void) {
     argint(0, &mode);
 
     consolevgamode(mode);
+    consoleClearScreen();
     return 0;
 }
 
@@ -39,9 +40,7 @@ int sys_setpixel(void) {
     int colour;
     argint(2, &colour);
 
-    uchar *pixelStart = consolevgabuffer();
-    int offset = (320 * y) + x;
-    pixelStart[offset] = (uchar)colour;
+    consoleSetPixel(x, y, colour);
     return 0;
 }
 
@@ -72,10 +71,8 @@ int sys_drawline(void) {
     int sy = (y0 < y1) ? 1 : -1;
 
     int err = dx - dy;
-    uchar *pixelStart = consolevgabuffer();
     while(true) {
-        int offset = (320 * y0) + x0;
-        pixelStart[offset] = (uchar)colour;
+        consoleSetPixel(x0, y0, colour);
         if (x0 == x1 && y0 == y1) {
             break;
         }
