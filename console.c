@@ -1017,6 +1017,10 @@ void consoleSetPixel(int x, int y, int colour) {
                 return;
             }
 
+            if (colour < 0 || colour > 15) {
+                colour = 0;
+            }
+
             int position = x + (y * 640); 
             int value = position % 8;
             offset = position / 8;

@@ -31,7 +31,9 @@ int drawline(int, int, int, int, int);
 int begin(void);
 int end(void);
 int add(int, int);
-// TODO: Declare your user APIs for your system calls.
+// void beginBatching();
+// void endBatching();
+// void drawLine(int x0, int y0, int x1, int y1, int colour);
 
 // ulib.c
 int stat(const char*, struct stat*);
