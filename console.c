@@ -723,7 +723,7 @@ uchar font_8x16[4096] =
  * 0 = blue
  * 1 = green
  * 2 = red
- * 3 = grey
+ * 3 = grey/intensity
  */
 void consolevgaplane(uchar plane) {
     uchar planeMask;
@@ -917,8 +917,15 @@ uchar* consolevgabuffer() {
 }
 
 void consoleSnapshot() {
+    // Save the text
     memmove(snap.text, VGA_0x03_MEMORY, VGA_0x03_SIZE);
-    updateCursorPosition();
+
+    // Update the cursor pos
+    outb(CRTPORT, 14);
+    snap.cursor = inb(CRTPORT + 1) << 8;
+    outb(CRTPORT, 15);
+    snap.cursor |= inb(CRTPORT + 1);
+
     snap.update = true;
 }
 
@@ -945,9 +952,6 @@ void consoleRevertToSnapshot() {
 
 void consoleClearScreen() {
     switch (currentvgamode) {
-    case 0x03:
-        return;
-        break;
     case 0x12:
         for (int plane = 0; plane < 4; plane++) {
             consolevgaplane(plane);
@@ -973,7 +977,14 @@ uchar colours[] = {
     1, 2, -1, -1, // yellow = 5
     0, 1, 2, -1, // white = 6
     3, -1, -1, -1, // grey = 7
-    0, 1, 2, 3, // black = 8
+    2, 3, -1, -1, // light red = 8
+    1, 3, -1, -1, // light green = 9
+    0, 3, -1, -1, // light blue = 10
+    0, 3, 2, -1, // light magenta = 11
+    0, 3, 1, -1, // light cyan = 12
+    2, 3, 1, -1, // light yellow = 13
+    2, 3, 1, 0, // light white (?) = 14
+    0, 1, 2, 3, // black = 15
 };
 
 int bitValues[] = {
@@ -987,7 +998,7 @@ void consoleSetPixel(int x, int y, int colour) {
     int offset = 0;
     switch (currentvgamode) {
         case 0x13: ;
-            if (y >= VGA_0x13_HEIGHT || x >= VGA_0x13_WIDTH || x < 0 || y < 0) {
+            if (y > VGA_0x13_HEIGHT || x > VGA_0x13_WIDTH || x < 0 || y < 0) {
                 return;
             }
 
@@ -1001,7 +1012,7 @@ void consoleSetPixel(int x, int y, int colour) {
             break;
 
         case 0x12: ;
-            if (y >= VGA_0x12_HEIGHT || x >= VGA_0x12_WIDTH || x < 0 || y < 0) {
+            if (y > VGA_0x12_HEIGHT || x > VGA_0x12_WIDTH || x < 0 || y < 0) {
                 return;
             }
 
@@ -1019,12 +1030,11 @@ void consoleSetPixel(int x, int y, int colour) {
                 consolevgaplane(planeNum);
                 uchar* planeStart = consolevgabuffer();
 
-                if (colour >= 32 && colour < 36) {
-                    // black, so xor
+                planeStart[offset] |= bitValues[value];
+
+                if (colour >= 60 && colour < 64) {
+                    // black so xor
                     planeStart[offset] ^= bitValues[value];
-                } else {
-                    // colour so or
-                    planeStart[offset] |= bitValues[value];
                 }
             }
             break;

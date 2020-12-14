@@ -29,6 +29,7 @@ int sys_setvideomode(void) {
 
     consolevgamode(mode);
     consoleClearScreen();
+    cprintf("Switched to video mode %d\n", mode);
     return 0;
 }
 
@@ -55,7 +56,6 @@ int sys_drawline(void) {
     argint(3, &y1);
     int colour;
     argint(4, &colour);
-    cprintf("line drawn! x0 = %d, x1 = %d\n", x0, x1);
 
     int dx = x1 - x0;
     if (dx < 0) {

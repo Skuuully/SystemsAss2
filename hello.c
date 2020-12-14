@@ -3,6 +3,5 @@
 
 int main() {
     greeting();
-    printf(1, "%d", add(1, 2));
     exit();
 }
