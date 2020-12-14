@@ -29,7 +29,7 @@ int sys_setvideomode(void) {
 
     consolevgamode(mode);
     consoleClearScreen();
-    cprintf("Switched to video mode %d\n", mode);
+    //cprintf("Switched to video mode %d\n", mode);
     return 0;
 }
 

@@ -39,8 +39,6 @@ struct snapshot {
 
     bool update;
 } snap;
-// ushort console_snap[VGA_0x03_SIZE];
-// int cursorPos = 0;
 
 /**
  * Global console state shared between all processes and CPUs.
@@ -951,13 +949,14 @@ void consoleRevertToSnapshot() {
 }
 
 void consoleClearScreen() {
+    cprintf("Cleared in mode %d\n", currentvgamode);
     switch (currentvgamode) {
     case 0x12:
         for (int plane = 0; plane < 4; plane++) {
             consolevgaplane(plane);
             uchar* planeMem = consolevgabuffer();
-            uchar black[VGA_0x12_WIDTH * VGA_0x12_HEIGHT] = {0};
-            memmove(planeMem, black, VGA_0x12_WIDTH * VGA_0x12_HEIGHT);
+            uchar black[VGA_0x12_WIDTH * VGA_0x12_HEIGHT / 10] = {0};
+            memmove(planeMem, black, VGA_0x12_WIDTH * VGA_0x12_HEIGHT / 10);
         }
         break;
     case 0x13: ;
@@ -967,26 +966,28 @@ void consoleClearScreen() {
     }
 }
 
-// Array of colours for vga mode 12h
-uchar colours[] = {
-    1, -1, -1, -1, // green = 0
-    2, -1, -1, -1, // red = 1
-    0, -1, -1, -1, // blue = 2
-    0, 2, -1, -1, // magenta = 3
-    0, 1, -1, -1, // cyan = 4
-    1, 2, -1, -1, // yellow = 5
-    0, 1, 2, -1, // white = 6
-    3, -1, -1, -1, // grey = 7
-    2, 3, -1, -1, // light red = 8
-    1, 3, -1, -1, // light green = 9
-    0, 3, -1, -1, // light blue = 10
-    0, 3, 2, -1, // light magenta = 11
-    0, 3, 1, -1, // light cyan = 12
-    2, 3, 1, -1, // light yellow = 13
-    2, 3, 1, 0, // light white (?) = 14
-    0, 1, 2, 3, // black = 15
+// Array of colours for vga mode 12h, true indicates that the colour should use the plane, false it should not.
+// black has a special case, uses all planes but for opposite reason
+bool colours[] = {
+    false, true, false, false, // green = 0
+    false, false, true, false, // red = 1
+    true, false, false, false, // blue = 2
+    true, false, true, false, // magenta = 3
+    true, true, false, false, // cyan = 4
+    false, true, true, false, // yellow = 5
+    true, true, true, false, // light grey = 6
+    false, false, false, true, // dark grey = 7
+    false, false, true, true, // light red = 8
+    false, true, false, true, // light green = 9
+    true, false, false, true, // light blue = 10
+    true, false, true, true, // light magenta = 11
+    true, true, false, true, // light cyan = 12
+    false, true, true, true, // light yellow = 13
+    true, true, true, true, // white = 14
+    false, false, false, false, // black = 15
 };
 
+// Bit value that can be accessed for getting where to set the pixel
 int bitValues[] = {
     0b10000000, 0b01000000, 0b00100000, 0b00010000, 0b00001000, 0b00000100, 0b00000010, 0b00000001,
 };
@@ -1022,18 +1023,11 @@ void consoleSetPixel(int x, int y, int colour) {
             colour *= 4;
 
             for (int i = 0; i < 4; i++) {
-                int planeNum = colours[colour + i];
-                if (planeNum == -1) {
-                    continue;
-                }
-
-                consolevgaplane(planeNum);
+                consolevgaplane(i);
                 uchar* planeStart = consolevgabuffer();
 
                 planeStart[offset] |= bitValues[value];
-
-                if (colour >= 60 && colour < 64) {
-                    // black so xor
+                if (!colours[colour + i]) {
                     planeStart[offset] ^= bitValues[value];
                 }
             }

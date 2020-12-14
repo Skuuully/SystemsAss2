@@ -6,20 +6,31 @@ int main() {
 
     setvideomode(0x12);
 
-    drawline(100, 100, 200, 200, 0);
-    drawline(0, 0, 0, 20, 1);
-    drawline(0, 0, 100, 100, 2);
-    drawline(10, 0, 30, 0, 3);
-    drawline(100, 100, 120, 20, 4);
-    drawline(120, 20, 100, 0, 5);
-    drawline(300, 300, 350, 350, 6);
+    int off = 20;
+    for (int i = off; i < off + 20; i++) {
+        for (int j = 0; j < 16; j++) {
+            drawline(0 + i + (j * off), 0, 0 + i + (j * off), 200, j);
+        }
+    }
+
+    for (int i = 0; i < 16; i++) {
+        drawline(0, 20 + (i * 3), 640, 20 + (i * 3), i);
+    }
+
+    // drawline(100, 100, 200, 200, 0);
+    // drawline(0, 0, 0, 20, 1);
+    // drawline(0, 0, 100, 100, 2);
+    // drawline(10, 0, 30, 0, 3);
+    // drawline(100, 100, 120, 20, 4);
+    // drawline(120, 20, 100, 0, 5);
+    // drawline(300, 300, 350, 350, 6);
     drawline(300, 305, 350, 355, 7);
     drawline(300, 297, 350, 347, 7);
-    //drawline(300, 300, 350, 350, 15);
-    for (int i = 0; i < 20; i++) {
-        drawline(20 + i, 20, 20 + i, 100, 10);
-        drawline(20 - i, 20, 20 - i, 100, 2);
-    }
+    drawline(300, 300, 350, 350, 15);
+    // for (int i = 0; i < 20; i++) {
+    //     drawline(20 + i, 20, 20 + i, 100, 10);
+    //     drawline(20 - i, 20, 20 - i, 100, 2);
+    // }
 
     // red through grey
     for (int i = 0; i < 20; i++) {
