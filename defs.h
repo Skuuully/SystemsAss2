@@ -30,6 +30,7 @@ void            consoleRevertToSnapshot(void);
 void            updateCursorPosition(void);
 void            consoleSetPixel(int, int, int);
 void            consoleDrawLine(int, int, int, int, int);
+void            consoleDrawCircle(int, int, int, int);
 void            consoleClearScreen();
 
 // exec.c

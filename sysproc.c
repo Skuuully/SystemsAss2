@@ -97,7 +97,20 @@ int sys_batchGraphics(void) {
     for (int i = 0; i < commandCount && i < COMMAND_BUFFER_SIZE; i++) {
         struct Command command = buffer[i];
 
-        consoleDrawLine(command.x0, command.y0, command.x1, command.y1, command.colour);
+        switch (command.unionType) {
+        case ct_drawLine: ;
+            struct DrawLineCommand drawLineCommand = command.commandData.drawLineCommand;
+            consoleDrawLine(drawLineCommand.x0, drawLineCommand.y0, drawLineCommand.x1, drawLineCommand.y1, drawLineCommand.colour);
+            break;
+        
+        case ct_drawCircle: ;
+            struct DrawCircleCommand drawCircleCommand = command.commandData.drawCircleCommand;
+            consoleDrawCircle(drawCircleCommand.xCenter, drawCircleCommand.yCenter, drawCircleCommand.radius, drawCircleCommand.colour);
+        break;
+
+        default:
+            break;
+        }
     }
 
     return 0;

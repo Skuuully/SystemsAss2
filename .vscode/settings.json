@@ -1,6 +1,7 @@
 {
     "files.associations": {
         "cmath": "c",
-        "random": "c"
+        "random": "c",
+        "type_traits": "cpp"
     }
 }

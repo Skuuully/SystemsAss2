@@ -1088,3 +1088,28 @@ void consoleDrawLine(int x0, int y0, int x1, int y1, int colour) {
     }
 }
 
+void consoleDrawCircle(int xCenter, int yCenter, int radius, int colour) {
+    int d = 3 - (2 * radius);
+    int x = 0;
+    int y = radius;
+
+    while(y >= x) {
+        consoleSetPixel(xCenter + x, yCenter + y, colour);
+        consoleSetPixel(xCenter - x, yCenter + y, colour);
+        consoleSetPixel(xCenter + x, yCenter - y, colour);
+        consoleSetPixel(xCenter - x, yCenter - y, colour);
+        consoleSetPixel(xCenter + y, yCenter + x, colour);
+        consoleSetPixel(xCenter - y, yCenter + x, colour);
+        consoleSetPixel(xCenter + y, yCenter - x, colour);
+        consoleSetPixel(xCenter - y, yCenter - x, colour);
+        x++;
+
+        if (d > 0) {
+            y--;
+            d += 4 * (x - y) + 10;
+        } else {
+            d += (4 * x) + 6;
+        }
+    }
+}
+
