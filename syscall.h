@@ -25,5 +25,4 @@
 #define SYS_setvideomode  24
 #define SYS_setpixel  25
 #define SYS_drawline  26
-#define SYS_begin  27
-#define SYS_end  28
+#define SYS_batchGraphics  27

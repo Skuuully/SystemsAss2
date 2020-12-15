@@ -6,6 +6,7 @@
 #include "memlayout.h"
 #include "mmu.h"
 #include "proc.h"
+#include "batcher.h"
 
 int sys_fork(void) {
     return fork();
@@ -76,4 +77,28 @@ int sys_uptime(void) {
     xticks = ticks;
     release(&tickslock);
     return xticks;
+}
+
+// Performs all of the commands given, can be used to avoid multiple transitions between ring 3 and 0
+int sys_batchGraphics(void) {
+    int commandCount;
+    argint(0, &commandCount);
+
+    if (commandCount < 0) {
+        return 0;
+    }
+
+    cprintf("%d Graphics routines performed\n", commandCount);
+
+    struct Command* buffer;
+    argptr(1, (void*)&buffer, sizeof(buffer[0]));
+
+
+    for (int i = 0; i < commandCount && i < COMMAND_BUFFER_SIZE; i++) {
+        struct Command command = buffer[i];
+
+        consoleDrawLine(command.x0, command.y0, command.x1, command.y1, command.colour);
+    }
+
+    return 0;
 }

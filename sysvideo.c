@@ -13,23 +13,12 @@ int sys_greeting(void) {
     return 0;
 }
 
-int sys_begin(void) {
-    consoleSnapshot();
-    return 0;
-}
-
-int sys_end(void) {
-    consoleRevertToSnapshot();
-    return 0;
-}
-
 int sys_setvideomode(void) {
     int mode;
     argint(0, &mode);
 
     consolevgamode(mode);
     consoleClearScreen();
-    //cprintf("Switched to video mode %d\n", mode);
     return 0;
 }
 

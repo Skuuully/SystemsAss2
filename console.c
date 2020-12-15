@@ -833,7 +833,7 @@ void writeFont(uchar * fontBuffer, unsigned int fontHeight) {
 
 /**
  * Video mode switching function which must be called from kernel-space, returning `0` if a valid
- * mode was requested, otherwise `-1`.
+ * mode was requested and is a different mode to the current, otherwise `-1`.
  *
  * Currently, only these modes are supported:
  *   0x03: 80x25 text mode.
@@ -844,6 +844,15 @@ int consolevgamode(int vgamode) {
     acquire(&cons.lock);
 
     int errorcode = -1;
+
+    if (vgamode == currentvgamode) {
+        return errorcode;
+    }
+
+    // Snapshot console if transitioning from mode 3
+    if (currentvgamode == 0x03) {
+        consoleSnapshot();
+    }
 
     switch (vgamode)
     {
@@ -868,6 +877,11 @@ int consolevgamode(int vgamode) {
             currentvgamode = 0x13;
             errorcode = 0;
         } break;
+    }
+
+    // Revert to snapshot if swapped back to mode 3
+    if (vgamode == 0x03) {
+        consoleRevertToSnapshot();
     }
 
     release(&cons.lock);
@@ -967,7 +981,6 @@ void consoleClearScreen() {
 }
 
 // Array of colours for vga mode 12h, true indicates that the colour should use the plane, false it should not.
-// black has a special case, uses all planes but for opposite reason
 bool colours[] = {
     false, true, false, false, // green = 0
     false, false, true, false, // red = 1
@@ -1036,6 +1049,42 @@ void consoleSetPixel(int x, int y, int colour) {
                 }
             }
             break;
+    }
+}
+
+void consoleDrawLine(int x0, int y0, int x1, int y1, int colour) {
+    if (currentvgamode == 3) {
+        return;
+    }
+
+    int dx = x1 - x0;
+    if (dx < 0) {
+        dx -=  2 * dx;
+    }
+
+    int dy = y1 - y0;
+    if (dy < 0) {
+        dy -=  2 * dy;
+    }
+
+    int sx = (x0 < x1) ? 1 : -1;
+    int sy = (y0 < y1) ? 1 : -1;
+
+    int err = dx - dy;
+    while(true) {
+        consoleSetPixel(x0, y0, colour);
+        if (x0 == x1 && y0 == y1) {
+            break;
+        }
+        int e2 = 2 * err;
+        if (e2 > -dy) {
+            err -= dy;
+            x0 += sx;
+        }
+        if (e2 < dx) {
+            err += dx;
+            y0 += sy;
+        }
     }
 }
 
