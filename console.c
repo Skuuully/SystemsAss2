@@ -928,6 +928,7 @@ uchar* consolevgabuffer() {
     return base;
 }
 
+// Takes a snaposhot of the current console, enabling the snapshots update
 void consoleSnapshot() {
     // Save the text
     memmove(snap.text, VGA_0x03_MEMORY, VGA_0x03_SIZE);
@@ -941,13 +942,7 @@ void consoleSnapshot() {
     snap.update = true;
 }
 
-void updateCursorPosition() {
-    outb(CRTPORT, 14);
-    snap.cursor = inb(CRTPORT + 1) << 8;
-    outb(CRTPORT, 15);
-    snap.cursor |= inb(CRTPORT + 1);
-}
-
+// Moves the snapshot data into memory disabling the snapshot update
 void consoleRevertToSnapshot() {
     memmove(VGA_0x03_MEMORY, snap.text, VGA_0x03_SIZE);
 
@@ -962,6 +957,7 @@ void consoleRevertToSnapshot() {
     snap.update = false;
 }
 
+// Clears the screen of the console in modes 0x12 or 0x13, otherwise does nothing 
 void consoleClearScreen() {
     cprintf("Cleared in mode %d\n", currentvgamode);
     switch (currentvgamode) {
@@ -1000,19 +996,20 @@ bool colours[] = {
     false, false, false, false, // black = 15
 };
 
-// Bit value that can be accessed for getting where to set the pixel
+// Bit value that can be accessed for getting where to set the pixel in mode 12h
 int bitValues[] = {
     0b10000000, 0b01000000, 0b00100000, 0b00010000, 0b00001000, 0b00000100, 0b00000010, 0b00000001,
 };
 
-// Colour value given will change the output given depending on the vgamode
-// the area that can be drawn to will also differ
-// 
+
+// Sets a pixels colour
+// Note: the colour value given will change the output given depending on the current vgamode, the available drawing space will also differ
 void consoleSetPixel(int x, int y, int colour) {
     int offset = 0;
     switch (currentvgamode) {
-        case 0x13: ;
-            if (y > VGA_0x13_HEIGHT || x > VGA_0x13_WIDTH || x < 0 || y < 0) {
+        case 0x13: {
+            // avoid plotting pixels out of bounds
+            if (y >= VGA_0x13_HEIGHT || x >= VGA_0x13_WIDTH || x < 0 || y < 0) {
                 return;
             }
 
@@ -1020,13 +1017,15 @@ void consoleSetPixel(int x, int y, int colour) {
             offset = (320 * y) + x;
             pixelStart[offset] = (uchar)colour;
             break;
+        }
 
         case 0x03:
             // Test mode, do nothing
             break;
 
-        case 0x12: ;
-            if (y > VGA_0x12_HEIGHT || x > VGA_0x12_WIDTH || x < 0 || y < 0) {
+        case 0x12: {
+            // avoid plotting pixels out of bounds
+            if (y >= VGA_0x12_HEIGHT || x >= VGA_0x12_WIDTH || x < 0 || y < 0) {
                 return;
             }
 
@@ -1049,14 +1048,12 @@ void consoleSetPixel(int x, int y, int colour) {
                 }
             }
             break;
+        }
     }
 }
 
+// Draws a line to the console
 void consoleDrawLine(int x0, int y0, int x1, int y1, int colour) {
-    if (currentvgamode == 3) {
-        return;
-    }
-
     int dx = x1 - x0;
     if (dx < 0) {
         dx -=  2 * dx;
@@ -1088,6 +1085,9 @@ void consoleDrawLine(int x0, int y0, int x1, int y1, int colour) {
     }
 }
 
+// Draws a circle to the console, uses bresenham circle algorithm as can be 
+// found here: https://www.geeksforgeeks.org/bresenhams-circle-drawing-algorithm/
+// to draw the outline
 void consoleDrawCircle(int xCenter, int yCenter, int radius, int colour) {
     int d = 3 - (2 * radius);
     int x = 0;
@@ -1113,6 +1113,10 @@ void consoleDrawCircle(int xCenter, int yCenter, int radius, int colour) {
     }
 }
 
+// Draws and fills a circle, has a slightly different shape to draw version as both are using very different mehthods
+// this version is based on approximation as suggested by some stack overflow post: https://stackoverflow.com/a/1237519
+// its also quite nice and quick. Previously tried drawing lines from the points on the bresenham circle however it left small
+// gaps
 void consoleFillCircle(int xCenter, int yCenter, int radius, int colour) {
     int rSquared = radius * radius;
     for (int y = -radius; y <= radius; y++) {
@@ -1124,6 +1128,7 @@ void consoleFillCircle(int xCenter, int yCenter, int radius, int colour) {
     }
 }
 
+// Draws the outline of a rectangle to the console
 void consoleDrawRect(int xLeft, int yTop, int width, int height, int colour) {
     int yBottom = yTop + height;
     int xRight = xLeft + width;
@@ -1133,6 +1138,7 @@ void consoleDrawRect(int xLeft, int yTop, int width, int height, int colour) {
     consoleDrawLine(xLeft, yBottom, xRight, yBottom, colour);
 }
 
+// Draws a rectangle to the console and fills
 void consoleFillRect(int xLeft, int yTop, int width, int height, int colour) {
     int xRight = xLeft + width;
     for (int r = 0; r < height; r++) {

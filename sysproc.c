@@ -79,7 +79,7 @@ int sys_uptime(void) {
     return xticks;
 }
 
-// Performs all of the commands given, can be used to avoid multiple transitions between ring 3 and 0
+// Performs all of the commands given by the buffer, used to avoid multiple transitions between ring 3 and 0
 int sys_batchGraphics(void) {
     int commandCount;
     argint(0, &commandCount);

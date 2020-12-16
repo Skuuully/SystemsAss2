@@ -31,6 +31,7 @@ void AddCommand(union CommandData commandData, int commandType) {
     }
 }
 
+// Adds a draw line command to the buffer with the given parameters
 void batchDrawLine(int x0, int y0, int x1, int y1, int colour) {
     if (commandCount >= COMMAND_BUFFER_SIZE) {
         return;
@@ -48,6 +49,7 @@ void batchDrawLine(int x0, int y0, int x1, int y1, int colour) {
     AddCommand(commandData, ct_drawLine);
 }
 
+// Adds the appropiate draw circle command to the buffer with the correct parameters and type
 void batchDrawCircle(int xCenter, int yCenter, int radius, int colour, bool fill) {
     if (commandCount >= COMMAND_BUFFER_SIZE) {
         return;
@@ -69,6 +71,7 @@ void batchDrawCircle(int xCenter, int yCenter, int radius, int colour, bool fill
     }
 }
 
+// Adds the appropiate draw rectangle command to the buffer with the correct parameters and type
 void batchDrawRect(int xLeft, int yTop, int width, int height, int colour, bool fill) {
     if (commandCount >= COMMAND_BUFFER_SIZE) {
         return;
