@@ -107,6 +107,21 @@ int sys_batchGraphics(void) {
             struct DrawCircleCommand drawCircleCommand = command.commandData.drawCircleCommand;
             consoleDrawCircle(drawCircleCommand.xCenter, drawCircleCommand.yCenter, drawCircleCommand.radius, drawCircleCommand.colour);
         break;
+        
+        case ct_fillCircle: ;
+            struct DrawCircleCommand drawCircleCommand = command.commandData.drawCircleCommand;
+            consoleFillCircle(drawCircleCommand.xCenter, drawCircleCommand.yCenter, drawCircleCommand.radius, drawCircleCommand.colour);
+        break;
+        
+        case ct_drawRect: ;
+            struct DrawRectCommand drawRectCommand = command.commandData.drawRectCommand;
+            consoleDrawRect(drawRectCommand.xLeft, drawRectCommand.yTop, drawRectCommand.width, drawRectCommand.height, drawRectCommand.colour);
+        break;
+
+        case ct_fillRect: ;
+            struct DrawRectCommand drawRectCommand = command.commandData.drawRectCommand;
+            consoleFillRect(drawRectCommand.xLeft, drawRectCommand.yTop, drawRectCommand.width, drawRectCommand.height, drawRectCommand.colour);
+        break;
 
         default:
             break;

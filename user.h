@@ -28,8 +28,10 @@ int greeting(void);
 int setvideomode(int);
 int setpixel(int, int, int);
 int drawline(int, int, int, int, int);
-int add(int, int);
 int batchGraphics(int, void*);
+
+// adder.c
+int add(int, int);
 
 // ulib.c
 int stat(const char*, struct stat*);

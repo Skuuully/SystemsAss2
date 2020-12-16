@@ -7,15 +7,18 @@ int commandCount = 0;
 
 void beginBatching() {
     commandCount = 0;
+    memset(buffer, 0, COMMAND_BUFFER_SIZE);
 }
 
 // Checks if we have any commands in the buffer and if so uses system call to output them
 void endBatching() {
     if (commandCount > 0) {
         batchGraphics(commandCount, buffer);
+        commandCount = 0;
     }
 }
 
+// Adds a command to the buffer
 void AddCommand(union CommandData commandData, int commandType) {
     struct Command command;
     command.commandData = commandData;
@@ -25,7 +28,6 @@ void AddCommand(union CommandData commandData, int commandType) {
     commandCount++;
     if (commandCount == COMMAND_BUFFER_SIZE) {
         endBatching();
-        commandCount = 0;
     }
 }
 
@@ -46,7 +48,7 @@ void batchDrawLine(int x0, int y0, int x1, int y1, int colour) {
     AddCommand(commandData, ct_drawLine);
 }
 
-void batchDrawCircle(int xCenter, int yCenter, int radius, int colour) {
+void batchDrawCircle(int xCenter, int yCenter, int radius, int colour, bool fill) {
     if (commandCount >= COMMAND_BUFFER_SIZE) {
         return;
     }
@@ -59,5 +61,32 @@ void batchDrawCircle(int xCenter, int yCenter, int radius, int colour) {
 
     union CommandData commandData;
     commandData.drawCircleCommand = circleCommand;
-    AddCommand(commandData, ct_drawCircle);
+
+    if (fill) {
+        AddCommand(commandData, ct_fillCircle);
+    } else {
+        AddCommand(commandData, ct_drawCircle);
+    }
+}
+
+void batchDrawRect(int xLeft, int yTop, int width, int height, int colour, bool fill) {
+    if (commandCount >= COMMAND_BUFFER_SIZE) {
+        return;
+    }
+
+    struct DrawRectCommand rectCommand;
+    rectCommand.xLeft = xLeft;
+    rectCommand.yTop = yTop;
+    rectCommand.width = width;
+    rectCommand.height = height;
+    rectCommand.colour = colour;
+
+    union CommandData commandData;
+    commandData.drawRectCommand = rectCommand;
+
+    if (fill) {
+        AddCommand(commandData, ct_fillRect);
+    } else {
+        AddCommand(commandData, ct_drawRect);
+    }
 }

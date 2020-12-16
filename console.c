@@ -969,8 +969,8 @@ void consoleClearScreen() {
         for (int plane = 0; plane < 4; plane++) {
             consolevgaplane(plane);
             uchar* planeMem = consolevgabuffer();
-            uchar black[VGA_0x12_WIDTH * VGA_0x12_HEIGHT / 10] = {0};
-            memmove(planeMem, black, VGA_0x12_WIDTH * VGA_0x12_HEIGHT / 10);
+            uchar black[VGA_0x12_WIDTH * VGA_0x12_HEIGHT / 8] = {0};
+            memmove(planeMem, black, VGA_0x12_WIDTH * VGA_0x12_HEIGHT / 8);
         }
         break;
     case 0x13: ;
@@ -1110,6 +1110,33 @@ void consoleDrawCircle(int xCenter, int yCenter, int radius, int colour) {
         } else {
             d += (4 * x) + 6;
         }
+    }
+}
+
+void consoleFillCircle(int xCenter, int yCenter, int radius, int colour) {
+    int rSquared = radius * radius;
+    for (int y = -radius; y <= radius; y++) {
+        for (int x =- radius; x <= radius; x++) {
+            if ((x*x) + (y*y) <= rSquared) {
+                consoleSetPixel(xCenter + x, yCenter + y, colour);
+            }
+        }
+    }
+}
+
+void consoleDrawRectangle(int xLeft, int yTop, int width, int height, int colour) {
+    int yBottom = yTop + height;
+    int xRight = xLeft + width;
+    consoleDrawLine(xLeft, yTop, xRight, yTop, colour);
+    consoleDrawLine(xLeft, yTop, xLeft, yBottom, colour);
+    consoleDrawLine(xRight, yTop, xRight, yBottom, colour);
+    consoleDrawLine(xLeft, yBottom, xRight, yBottom, colour);
+}
+
+void consoleFillRectangle(int xLeft, int yTop, int width, int height, int colour) {
+    int xRight = xLeft + width;
+    for (int r = 0; r < height; r++) {
+        consoleDrawLine(xLeft, yTop + r, xRight, yTop + r, colour);
     }
 }
 

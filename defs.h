@@ -31,6 +31,9 @@ void            updateCursorPosition(void);
 void            consoleSetPixel(int, int, int);
 void            consoleDrawLine(int, int, int, int, int);
 void            consoleDrawCircle(int, int, int, int);
+void            consoleFillCircle(int, int, int, int);
+void            consoleDrawRect(int, int, int, int, int);
+void            consoleFillRect(int, int, int, int, int);
 void            consoleClearScreen();
 
 // exec.c

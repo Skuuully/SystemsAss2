@@ -39,8 +39,10 @@ int main() {
     }
     batchDrawLine(330, 400, 400, 500, 1);
 
-    batchDrawCircle(50, 50, 10, 0);
-    batchDrawCircle(100, 100, 10, 4);
+    batchDrawCircle(100, 400, 50, 4, true);
+    batchDrawCircle(100, 400, 50, 0, false);
+
+    // batchDrawRect(20, 100, 30, 40, 12, false);
 
     endBatching();
 
