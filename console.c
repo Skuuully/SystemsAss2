@@ -1124,7 +1124,7 @@ void consoleFillCircle(int xCenter, int yCenter, int radius, int colour) {
     }
 }
 
-void consoleDrawRectangle(int xLeft, int yTop, int width, int height, int colour) {
+void consoleDrawRect(int xLeft, int yTop, int width, int height, int colour) {
     int yBottom = yTop + height;
     int xRight = xLeft + width;
     consoleDrawLine(xLeft, yTop, xRight, yTop, colour);
@@ -1133,7 +1133,7 @@ void consoleDrawRectangle(int xLeft, int yTop, int width, int height, int colour
     consoleDrawLine(xLeft, yBottom, xRight, yBottom, colour);
 }
 
-void consoleFillRectangle(int xLeft, int yTop, int width, int height, int colour) {
+void consoleFillRect(int xLeft, int yTop, int width, int height, int colour) {
     int xRight = xLeft + width;
     for (int r = 0; r < height; r++) {
         consoleDrawLine(xLeft, yTop + r, xRight, yTop + r, colour);

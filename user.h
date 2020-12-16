@@ -30,9 +30,6 @@ int setpixel(int, int, int);
 int drawline(int, int, int, int, int);
 int batchGraphics(int, void*);
 
-// adder.c
-int add(int, int);
-
 // ulib.c
 int stat(const char*, struct stat*);
 char* strcpy(char*, const char*);

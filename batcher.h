@@ -44,9 +44,8 @@ enum CommandType {
 
 void beginBatching();
 void endBatching();
-void AddCommand(union CommandData commandData, int commandType);
 void batchDrawLine(int x0, int y0, int x1, int y1, int colour);
 void batchDrawCircle(int xCenter, int yCenter, int radius, int colour, bool fill);
-void batchDrawRect(int xLeft, int yTop, int width, int height, int colour, bool fill);
+//void batchDrawRect(int xLeft, int yTop, int width, int height, int colour, bool fill);
 
 #endif
