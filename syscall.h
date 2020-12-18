@@ -25,4 +25,8 @@
 #define SYS_setvideomode  24
 #define SYS_setpixel  25
 #define SYS_drawline  26
-#define SYS_batchGraphics  27
+#define SYS_drawcircle  27
+#define SYS_fillcircle  28
+#define SYS_drawrect  29
+#define SYS_fillrect  30
+#define SYS_batchGraphics  31

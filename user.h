@@ -28,6 +28,10 @@ int greeting(void);
 int setvideomode(int);
 int setpixel(int, int, int);
 int drawline(int, int, int, int, int);
+int drawrect(int, int, int, int, int);
+int fillrect(int, int, int, int, int);
+int drawcircle(int, int, int, int);
+int fillcircle(int, int, int, int);
 int batchGraphics(int, void*);
 
 // ulib.c

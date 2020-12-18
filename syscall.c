@@ -104,6 +104,10 @@ extern int sys_greeting(void);
 extern int sys_setvideomode(void);
 extern int sys_setpixel(void);
 extern int sys_drawline(void);
+extern int sys_drawrect(void);
+extern int sys_fillrect(void);
+extern int sys_drawcircle(void);
+extern int sys_fillcircle(void);
 extern int sys_batchGraphics(void);
 // TODO: Expose your system call assembly function to C.
 
@@ -134,6 +138,10 @@ static int (*syscalls[])(void) = {
     [SYS_setvideomode]   sys_setvideomode,
     [SYS_setpixel]   sys_setpixel,
     [SYS_drawline]   sys_drawline,
+    [SYS_drawrect]   sys_drawrect,
+    [SYS_fillrect]   sys_fillrect,
+    [SYS_drawcircle]   sys_drawcircle,
+    [SYS_fillcircle]   sys_fillcircle,
     [SYS_batchGraphics]   sys_batchGraphics,
     // TODO: Add your system call function to the OS syscall table.
 };

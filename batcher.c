@@ -4,10 +4,12 @@
 
 struct Command buffer[COMMAND_BUFFER_SIZE];
 int commandCount = 0;
+// bool active = false;
 
 void beginBatching() {
     commandCount = 0;
     memset(buffer, 0, COMMAND_BUFFER_SIZE);
+    // active = true;
 }
 
 // Checks if we have any commands in the buffer and if so uses system call to output them
@@ -16,10 +18,11 @@ void endBatching() {
         batchGraphics(commandCount, buffer);
         commandCount = 0;
     }
+    // active = false;
 }
 
 // Adds a command to the buffer
-void AddCommand(union CommandData commandData, int commandType) {
+void addCommand(union CommandData commandData, int commandType) {
     struct Command command;
     command.commandData = commandData;
     command.unionType = commandType;
@@ -33,9 +36,14 @@ void AddCommand(union CommandData commandData, int commandType) {
 
 // Adds a draw line command to the buffer with the given parameters
 void batchDrawLine(int x0, int y0, int x1, int y1, int colour) {
-    if (commandCount >= COMMAND_BUFFER_SIZE) {
-        return;
-    }
+    // if (!active) {
+    //     drawline(x0, y0, x1, y1, colour);
+    //     return;
+    // }
+
+    // if (commandCount >= COMMAND_BUFFER_SIZE) {
+    //     return;
+    // }
 
     struct DrawLineCommand lineCommand;
     lineCommand.x0 = x0;
@@ -46,11 +54,20 @@ void batchDrawLine(int x0, int y0, int x1, int y1, int colour) {
 
     union CommandData commandData;
     commandData.drawLineCommand = lineCommand;
-    AddCommand(commandData, ct_drawLine);
+    addCommand(commandData, ct_drawLine);
 }
 
 // Adds the appropiate draw circle command to the buffer with the correct parameters and type
 void batchDrawCircle(int xCenter, int yCenter, int radius, int colour, bool fill) {
+    // if (!active) {
+    //     if (fill) {
+    //         fillcircle(xCenter, yCenter, radius, colour);
+    //     } else {
+    //         drawcircle(xCenter, yCenter, radius, colour);
+    //     }
+    //     return;
+    // }
+
     if (commandCount >= COMMAND_BUFFER_SIZE) {
         return;
     }
@@ -64,15 +81,21 @@ void batchDrawCircle(int xCenter, int yCenter, int radius, int colour, bool fill
     union CommandData commandData;
     commandData.drawCircleCommand = circleCommand;
 
-    if (fill) {
-        AddCommand(commandData, ct_fillCircle);
-    } else {
-        AddCommand(commandData, ct_drawCircle);
-    }
+    int type = fill ? ct_fillCircle : ct_drawCircle;
+    addCommand(commandData, type);
 }
 
 // Adds the appropiate draw rectangle command to the buffer with the correct parameters and type
 void batchDrawRect(int xLeft, int yTop, int width, int height, int colour, bool fill) {
+    // if (!active) {
+    //     if (fill) {
+    //         fillrect(xLeft, yTop, width, height, colour);
+    //     } else {
+    //         drawrect(xLeft, yTop, width, height, colour);
+    //     }
+    //     return;
+    // }
+
     if (commandCount >= COMMAND_BUFFER_SIZE) {
         return;
     }
@@ -87,9 +110,6 @@ void batchDrawRect(int xLeft, int yTop, int width, int height, int colour, bool 
     union CommandData commandData;
     commandData.drawRectCommand = rectCommand;
 
-    if (fill) {
-        AddCommand(commandData, ct_fillRect);
-    } else {
-        AddCommand(commandData, ct_drawRect);
-    }
+    int type = fill ? ct_fillRect : ct_drawRect;
+    addCommand(commandData, type);
 }
