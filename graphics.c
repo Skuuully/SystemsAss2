@@ -15,6 +15,8 @@ int main() {
 
         batchDrawLine(0, i * 10, 639, 479 - (i * 10), i);
         batchDrawLine(639, i * 10, 0, 479 - (i * 10), i);
+
+        batchDrawPixel(50 + i, 200, i);
     }
 
     for (int i = 0; i < 9; i++) {

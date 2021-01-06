@@ -5,6 +5,13 @@
 #define COMMAND_BUFFER_SIZE 100
 
 // Data required for console draw line
+struct DrawPixelCommand {
+    int x;
+    int y;
+    int colour;
+};
+
+// Data required for console draw line
 struct DrawLineCommand {
     int x0;
     int y0;
@@ -32,6 +39,7 @@ struct DrawRectCommand {
 
 // Stores a type of command
 union CommandData {
+    struct DrawPixelCommand drawPixelCommand;
     struct DrawLineCommand drawLineCommand;
     struct DrawCircleCommand drawCircleCommand;
     struct DrawRectCommand drawRectCommand;
@@ -45,11 +53,12 @@ struct Command {
 
 // Available routines that can be used to draw to the console
 enum CommandType {
-    ct_drawLine, ct_drawCircle, ct_fillCircle, ct_drawRect, ct_fillRect
+    ct_drawLine, ct_drawCircle, ct_fillCircle, ct_drawRect, ct_fillRect, ct_drawPixel
 };
 
 void beginBatching();
 void endBatching();
+void batchDrawPixel(int x, int y, int colour);
 void batchDrawLine(int x0, int y0, int x1, int y1, int colour);
 void batchDrawCircle(int xCenter, int yCenter, int radius, int colour, bool fill);
 void batchDrawRect(int xLeft, int yTop, int width, int height, int colour, bool fill);

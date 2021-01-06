@@ -4,21 +4,30 @@
 
 struct Command buffer[COMMAND_BUFFER_SIZE];
 int commandCount = 0;
-// bool active = false;
+bool active = false;
 
 void beginBatching() {
     commandCount = 0;
     memset(buffer, 0, COMMAND_BUFFER_SIZE);
-    // active = true;
+    active = true;
 }
 
-// Checks if we have any commands in the buffer and if so uses system call to output them
+// Checks if we have any commands in the buffer and if so uses system call to output them, disables future calls from batching until re-enabled
 void endBatching() {
     if (commandCount > 0) {
         batchGraphics(commandCount, buffer);
         commandCount = 0;
     }
-    // active = false;
+
+    active = false;
+}
+
+// Checks if there are any commands in the buffer and if so pumps them out, maintains that the batcher is active so that future calls are still batched
+void internalEndBatch() {
+    if (commandCount > 0) {
+        batchGraphics(commandCount, buffer);
+        commandCount = 0;
+    }
 }
 
 // Adds a command to the buffer
@@ -30,20 +39,41 @@ void addCommand(union CommandData commandData, int commandType) {
     buffer[commandCount] = command;
     commandCount++;
     if (commandCount == COMMAND_BUFFER_SIZE) {
-        endBatching();
+        internalEndBatch();
     }
 }
 
 // Adds a draw line command to the buffer with the given parameters
-void batchDrawLine(int x0, int y0, int x1, int y1, int colour) {
-    // if (!active) {
-    //     drawline(x0, y0, x1, y1, colour);
-    //     return;
-    // }
+void batchDrawPixel(int x, int y, int colour) {
+    if (!active) {
+        setpixel(x, y, colour);
+        return;
+    }
 
-    // if (commandCount >= COMMAND_BUFFER_SIZE) {
-    //     return;
-    // }
+    if (commandCount >= COMMAND_BUFFER_SIZE) {
+        return;
+    }
+
+    struct DrawPixelCommand pixelCommand;
+    pixelCommand.x = x;
+    pixelCommand.y = y;
+    pixelCommand.colour = colour;
+
+    union CommandData commandData;
+    commandData.drawPixelCommand = pixelCommand;
+    addCommand(commandData, ct_drawPixel);
+}
+
+// Adds a draw line command to the buffer with the given parameters
+void batchDrawLine(int x0, int y0, int x1, int y1, int colour) {
+    if (!active) {
+        drawline(x0, y0, x1, y1, colour);
+        return;
+    }
+
+    if (commandCount >= COMMAND_BUFFER_SIZE) {
+        return;
+    }
 
     struct DrawLineCommand lineCommand;
     lineCommand.x0 = x0;
@@ -59,14 +89,14 @@ void batchDrawLine(int x0, int y0, int x1, int y1, int colour) {
 
 // Adds the appropiate draw circle command to the buffer with the correct parameters and type
 void batchDrawCircle(int xCenter, int yCenter, int radius, int colour, bool fill) {
-    // if (!active) {
-    //     if (fill) {
-    //         fillcircle(xCenter, yCenter, radius, colour);
-    //     } else {
-    //         drawcircle(xCenter, yCenter, radius, colour);
-    //     }
-    //     return;
-    // }
+    if (!active) {
+        if (fill) {
+            fillcircle(xCenter, yCenter, radius, colour);
+        } else {
+            drawcircle(xCenter, yCenter, radius, colour);
+        }
+        return;
+    }
 
     if (commandCount >= COMMAND_BUFFER_SIZE) {
         return;
@@ -87,14 +117,14 @@ void batchDrawCircle(int xCenter, int yCenter, int radius, int colour, bool fill
 
 // Adds the appropiate draw rectangle command to the buffer with the correct parameters and type
 void batchDrawRect(int xLeft, int yTop, int width, int height, int colour, bool fill) {
-    // if (!active) {
-    //     if (fill) {
-    //         fillrect(xLeft, yTop, width, height, colour);
-    //     } else {
-    //         drawrect(xLeft, yTop, width, height, colour);
-    //     }
-    //     return;
-    // }
+    if (!active) {
+        if (fill) {
+            fillrect(xLeft, yTop, width, height, colour);
+        } else {
+            drawrect(xLeft, yTop, width, height, colour);
+        }
+        return;
+    }
 
     if (commandCount >= COMMAND_BUFFER_SIZE) {
         return;

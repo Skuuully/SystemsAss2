@@ -130,6 +130,12 @@ int sys_batchGraphics(void) {
         struct Command command = buffer[i];
 
         switch (command.unionType) {
+        case ct_drawPixel: {
+            struct DrawPixelCommand drawPixelCommand = command.commandData.drawPixelCommand;
+            consoleSetPixel(drawPixelCommand.x, drawPixelCommand.y, drawPixelCommand.colour);
+            break;
+        }
+
         case ct_drawLine: ;
             struct DrawLineCommand drawLineCommand = command.commandData.drawLineCommand;
             consoleDrawLine(drawLineCommand.x0, drawLineCommand.y0, drawLineCommand.x1, drawLineCommand.y1, drawLineCommand.colour);
