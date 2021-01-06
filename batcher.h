@@ -4,7 +4,7 @@
 // Number of commands that can be stored in the buffer at a time
 #define COMMAND_BUFFER_SIZE 100
 
-// Data required for console draw line
+// Data required for console set pixel
 struct DrawPixelCommand {
     int x;
     int y;
@@ -62,5 +62,6 @@ void batchDrawPixel(int x, int y, int colour);
 void batchDrawLine(int x0, int y0, int x1, int y1, int colour);
 void batchDrawCircle(int xCenter, int yCenter, int radius, int colour, bool fill);
 void batchDrawRect(int xLeft, int yTop, int width, int height, int colour, bool fill);
+void batchDrawPoly(int coords[], int colour);
 
 #endif
